@@ -17,6 +17,7 @@
 #include <pedsim_srvs/SpawnInteractiveObstacles.h>
 #include <pedsim_srvs/MovePeds.h>
 #include <flatland_msgs/Model.h>
+#include <gazebo_msgs/ModelState.h>
 #include <pedsim_msgs/Ped.h>
 #include <pedsim_msgs/LineObstacle.h>
 #include <pedsim_msgs/LineObstacles.h>
@@ -28,9 +29,10 @@
 /**
  * This class provides services to spawn and remove pedestrians dynamically.
  */
-class SceneServices {
+class SceneServices
+{
   // Constructor and Destructor
- public:
+public:
   SceneServices();
   virtual ~SceneServices() = default;
 
@@ -85,10 +87,10 @@ class SceneServices {
   * It is a more efficient way to setup a task during learning.
   */
   bool respawnPeds(pedsim_srvs::SpawnPeds::Request &request,
-                                pedsim_srvs::SpawnPeds::Response &response);
+                   pedsim_srvs::SpawnPeds::Response &response);
 
   bool moveAgentClustersInPedsim(pedsim_srvs::MovePeds::Request &request,
-                                pedsim_srvs::MovePeds::Response &response);
+                                 pedsim_srvs::MovePeds::Response &response);
 
   /**
   * @brief Adding static obstacles to pedsim.
@@ -96,34 +98,37 @@ class SceneServices {
   bool addStaticObstacles(pedsim_srvs::SpawnObstacle::Request &request,
                           pedsim_srvs::SpawnObstacle::Response &response);
 
- protected:
+protected:
   ros::NodeHandle nh_;
 
- private:
+private:
   std::vector<std::string> removePedsInPedsim();
   void addAgentClusterToPedsim(pedsim_msgs::Ped ped, std::vector<int> ids);
   std::vector<flatland_msgs::Model> getFlatlandModels(pedsim_msgs::Ped ped, std::vector<int> ids);
+  std::vector<gazebo_msgs::ModelState> getGazeboModels(pedsim_msgs::Ped ped, std::vector<int> ids);
   std::vector<int> generateAgentIds(int n);
   bool removeModelsInFlatland(std::vector<std::string> model_names);
   bool spawnModelsInFlatland(std::vector<flatland_msgs::Model> models);
+  bool spawnModelsInGazebo(std::vector<gazebo_msgs::ModelState> gazebo_models);
   // bool respawnModelsInFlatland(std::vector<std::string> old_model_names, std::vector<flatland_msgs::Model> new_models);
   void removeAllReferencesToInteractiveObstacles();
   void removeAllInteractiveObstaclesFromPedsim();
   void removeAllInteractiveObstaclesFromFlatland();
-  std::vector<Obstacle*> getWallsFromFlatlandModel(pedsim_msgs::InteractiveObstacle obstacle, double yaw);
+  std::vector<Obstacle *> getWallsFromFlatlandModel(pedsim_msgs::InteractiveObstacle obstacle, double yaw);
   int stringToEnumIndex(std::string str, std::vector<std::string> values);
 
-
   std::string spawn_models_topic_;
+  std::string spawn_gazebo_topic_;
   ros::ServiceClient spawn_models_client_;
-
+  ros::ServiceClient spawn_gazebo_client_;
+  std::string human_model;
   // std::string respawn_models_topic_;
   // ros::ServiceClient respawn_models_client_;
 
   std::string delete_models_topic_;
   ros::ServiceClient delete_models_client_;
 
-  std::vector<Obstacle*> walls;
+  std::vector<Obstacle *> walls;
 };
 
 #endif /* _scene_service_h_ */
