@@ -108,6 +108,7 @@ private:
   std::vector<gazebo_msgs::ModelState> getGazeboModels(pedsim_msgs::Ped ped, std::vector<int> ids);
   std::vector<int> generateAgentIds(int n);
   bool removeModelsInFlatland(std::vector<std::string> model_names);
+  bool removeModelsInGazebo(std::vector<std::string> model_names);
   bool spawnModelsInFlatland(std::vector<flatland_msgs::Model> models);
   bool spawnModelsInGazebo(std::vector<gazebo_msgs::ModelState> gazebo_models);
   // bool respawnModelsInFlatland(std::vector<std::string> old_model_names, std::vector<flatland_msgs::Model> new_models);

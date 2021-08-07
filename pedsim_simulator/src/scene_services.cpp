@@ -18,6 +18,7 @@
 #include <geometry_msgs/Quaternion.h>
 #include <gazebo_msgs/ModelState.h>
 #include <gazebo_msgs/SpawnModel.h>
+#include <gazebo_msgs/DeleteModel.h>
 #include <std_srvs/SetBool.h>
 #include <flatland_msgs/SpawnModels.h>
 #include <flatland_msgs/DeleteModels.h>
@@ -49,12 +50,13 @@ SceneServices::SceneServices()
   spawn_models_client_ = nh_.serviceClient<flatland_msgs::SpawnModels>(spawn_models_topic_, true);
   // respawn_models_topic_ = ros::this_node::getNamespace() + "/respawn_models";
   // respawn_models_client_ = nh_.serviceClient<flatland_msgs::RespawnModels>(respawn_models_topic_, true);
-  delete_models_topic_ = ros::this_node::getNamespace() + "/delete_models";
-  delete_models_client_ = nh_.serviceClient<flatland_msgs::DeleteModels>(delete_models_topic_, true);
 
   //gazebo service clients
   spawn_gazebo_topic_ = "gazebo/spawn_sdf_model";
   spawn_gazebo_client_ = nh_.serviceClient<gazebo_msgs::SpawnModel>(spawn_gazebo_topic_, true);
+
+  delete_models_topic_ = "gazebo/delete_model";
+  delete_models_client_ = nh_.serviceClient<gazebo_msgs::DeleteModel>(delete_models_topic_, true);
   // spawn_gazebo_client_.waitForExistence();
 
   // read in default human gazebo model
@@ -600,6 +602,32 @@ bool SceneServices::removeModelsInFlatland(std::vector<std::string> model_names)
     return false;
   }
 
+  return true;
+}
+
+bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
+{
+  ROS_INFO("deleting %ld models", model_names.size());
+  for (auto const &model : model_names)
+  {
+    gazebo_msgs::DeleteModel msg;
+    msg.request.model_name = model;
+
+    // check validity of client
+    while (!delete_models_client_.isValid())
+    {
+      ROS_WARN("Reconnecting delete_model_client_-server....");
+      delete_models_client_.waitForExistence(ros::Duration(5.0));
+      delete_models_client_ = nh_.serviceClient<gazebo_msgs::DeleteModel>(delete_models_topic_, true);
+    }
+    delete_models_client_.call(msg);
+
+    if (!msg.response.success)
+    {
+      ROS_ERROR("Failed to delete model %s.", model);
+      return false;
+    }
+  }
   return true;
 }
 
