@@ -121,7 +121,7 @@ bool SceneServices::removeAllPeds(std_srvs::SetBool::Request &request,
                                   std_srvs::SetBool::Response &response)
 {
   std::vector<std::string> model_names = removePedsInPedsim();
-  bool res = removeModelsInFlatland(model_names);
+  bool res = removeModelsInGazebo(model_names);
   response.success = res;
   return res;
 }
@@ -607,8 +607,8 @@ bool SceneServices::removeModelsInFlatland(std::vector<std::string> model_names)
 
 bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
 {
-  ROS_INFO("deleting %ld models", model_names.size());
-  for (auto const &model : model_names)
+  // ROS_INFO("deleting %ld models", model_names.size());
+  for (const auto&model : model_names)
   {
     gazebo_msgs::DeleteModel msg;
     msg.request.model_name = model;
@@ -620,6 +620,7 @@ bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
       delete_models_client_.waitForExistence(ros::Duration(5.0));
       delete_models_client_ = nh_.serviceClient<gazebo_msgs::DeleteModel>(delete_models_topic_, true);
     }
+    ROS_INFO("Deleting model with name %s", model);
     delete_models_client_.call(msg);
 
     if (!msg.response.success)
@@ -660,7 +661,7 @@ bool SceneServices::spawnModelsInGazebo(std::vector<gazebo_msgs::ModelState> gaz
   for (auto const &model : gazebo_models)
   {
     gazebo_msgs::SpawnModel srv;
-    srv.request.model_name = model.model_name;
+    srv.request.model_name = "person_" + model.model_name; // Ped ID !
     srv.request.model_xml = human_model;
     srv.request.robot_namespace = "";
     srv.request.initial_pose = model.pose;
