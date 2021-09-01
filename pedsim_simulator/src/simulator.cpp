@@ -132,9 +132,9 @@ bool Simulator::initializeSimulation()
 
   double spawn_period;
   nh_.param<double>("spawn_period", spawn_period, 5.0);
-  nh_.param<std::string>("frame_id", frame_id_, ros::this_node::getNamespace() + "odom");
+  nh_.param<std::string>("frame_id", frame_id_, ros::this_node::getNamespace() + "_odom");
   nh_.param<std::string>("robot_base_frame_id", robot_base_frame_id_,
-                         ros::this_node::getNamespace() + "base_footprint");
+                         ros::this_node::getNamespace() + "_base_footprint");
 
   // spawn robot
   Agent *a = new Agent("myrobot");
@@ -154,12 +154,41 @@ bool Simulator::initializeSimulation()
 
 void Simulator::runSimulation()
 {
-  ros::WallRate r(CONFIG.updateRate);
+  ros::WallRate r(100.0);
   while (ros::ok())
   {
+    // if (SCENE.getTime() < 0.1) {
+    //   // setup the robot
+    //   for (Agent* agent : SCENE.getAgents()) {
+    //     if (agent->getType() == Ped::Tagent::ROBOT) {
+    //       robot_ = agent;
+    //       last_robot_orientation_ =
+    //           poseFrom2DVelocity(robot_->getvx(), robot_->getvy());
+    //     }
+    //   }
+    // }
+
+    //   if (!paused_) {
+    //     updateRobotPositionFromTF();
+    //     SCENE.moveAllAgents();
+
+    //     publishAgents();
+    //     publishGroups();
+    //     publishRobotPosition();
+    //     publishObstacles();
+    //     publishWaypoints();
+    //   }
+    //   ros::spinOnce();
+    //   r.sleep();
+    // }
+
     if (!paused_)
     {
       // updateRobotPositionFromTF();
+      ros::Time now = ros::Time::now();
+      ros::Duration diff = now - last_sim_time;
+      last_sim_time = now;
+      SCENE.setTimeStepSize(diff.toSec() / 5.0); // slow down the simulation
       SCENE.moveAllAgents();
 
       for (auto agent : SCENE.getAgents())
