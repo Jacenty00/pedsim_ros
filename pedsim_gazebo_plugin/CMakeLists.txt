@@ -61,6 +61,10 @@ add_library(ActorPosesPlugin src/actor_poses_plugin.cpp)
 target_link_libraries(ActorPosesPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(ActorPosesPlugin ${catkin_EXPORTED_TARGETS})
 
+add_library(ActorPosePlugin src/ActorPlugin.cpp)
+target_link_libraries(ActorPosePlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(ActorPosePlugin ${catkin_EXPORTED_TARGETS})
+
 #############
 ## Install ##
 #############
