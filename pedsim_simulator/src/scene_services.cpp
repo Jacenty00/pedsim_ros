@@ -87,9 +87,9 @@ bool SceneServices::spawnPeds(pedsim_srvs::SpawnPeds::Request &request, pedsim_s
   // bool res = spawnModelsInFlatland(flatland_models);
   // response.success = res;
 
-  bool res = spawnModelsInGazebo(gazebo_models);
-  response.success = res;
-  return res;
+  // bool res = spawnModelsInGazebo(gazebo_models);
+  // response.success = res;
+  return true;
 }
 
 bool SceneServices::respawnPeds(pedsim_srvs::SpawnPeds::Request &request,
@@ -121,9 +121,9 @@ bool SceneServices::removeAllPeds(std_srvs::SetBool::Request &request,
                                   std_srvs::SetBool::Response &response)
 {
   std::vector<std::string> model_names = removePedsInPedsim();
-  bool res = removeModelsInGazebo(model_names);
-  response.success = res;
-  return res;
+  // bool res = removeModelsInGazebo(model_names);
+  // response.success = res;
+  return true;
 }
 
 // remove all agents and return a list of their names
@@ -396,9 +396,12 @@ void SceneServices::addAgentClusterToPedsim(pedsim_msgs::Ped ped, std::vector<in
     Agent *a = new Agent(name);
 
     // randomize location if we have more than one agent
-    if (ped.number_of_peds > 1) {
+    if (ped.number_of_peds > 1)
+    {
       a->setPosition(distribution_x(RNG()), distribution_y(RNG()));
-    } else {
+    }
+    else
+    {
       a->setPosition(ped.pos.x, ped.pos.y);
     }
 
@@ -615,7 +618,7 @@ bool SceneServices::removeModelsInFlatland(std::vector<std::string> model_names)
 bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
 {
   // ROS_INFO("deleting %ld models", model_names.size());
-  for (const auto&model : model_names)
+  for (const auto &model : model_names)
   {
     gazebo_msgs::DeleteModel msg;
     msg.request.model_name = model;
@@ -628,7 +631,7 @@ bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
       delete_models_client_ = nh_.serviceClient<gazebo_msgs::DeleteModel>(delete_models_topic_, true);
     }
     ROS_INFO("Deleting model with name %s", model);
-    delete_models_client_.call(msg);
+    // delete_models_client_.call(msg);
 
     if (!msg.response.success)
     {
@@ -670,8 +673,7 @@ bool SceneServices::spawnModelsInGazebo(std::vector<gazebo_msgs::ModelState> gaz
     gazebo_msgs::SpawnModel srv;
     srv.request.model_name = "person_" + model.model_name; // Ped ID !
     srv.request.model_xml = human_model;
-    srv.request.robot_namespace = "";
-    srv.request.initial_pose = model.pose;
+    srv.request.robot_namespace = "/" + model.model_name;
     srv.request.reference_frame = "world";
 
     // check validity of client
