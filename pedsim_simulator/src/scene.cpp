@@ -629,6 +629,10 @@ std::set<const Ped::Tagent *> Scene::getNeighbors(double x, double y,
 
   return potentialNeighbours;
 }
+void Scene::setTimeStepSize(float t)
+{
+  time_step_size = t;
+}
 
 void Scene::moveAllAgents()
 {

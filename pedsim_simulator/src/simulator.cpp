@@ -146,6 +146,7 @@ bool Simulator::initializeSimulation()
   robot_ = a;
 
   paused_ = false;
+  last_sim_time = ros::Time::now();
   spawn_timer_ =
       nh_.createTimer(ros::Duration(spawn_period), &Simulator::spawnCallback, this);
 

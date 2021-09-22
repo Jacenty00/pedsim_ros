@@ -75,27 +75,29 @@ using SimConfig = pedsim_simulator::PedsimSimulatorConfig;
 /// \class Simulator
 /// \brief Simulation wrapper
 /// \details ROS interface to the scene object provided by pedsim
-class Simulator {
- public:
-  explicit Simulator(const ros::NodeHandle& node);
+class Simulator
+{
+public:
+  explicit Simulator(const ros::NodeHandle &node);
   virtual ~Simulator();
   bool initializeSimulation();
   void runSimulation();
 
   // callbacks
-  bool onPauseSimulation(std_srvs::Empty::Request& request,
-                         std_srvs::Empty::Response& response);
-  bool onUnpauseSimulation(std_srvs::Empty::Request& request,
-                           std_srvs::Empty::Response& response);
+  bool onPauseSimulation(std_srvs::Empty::Request &request,
+                         std_srvs::Empty::Response &response);
+  bool onUnpauseSimulation(std_srvs::Empty::Request &request,
+                           std_srvs::Empty::Response &response);
 
-  void spawnCallback(const ros::TimerEvent& event);
+  void spawnCallback(const ros::TimerEvent &event);
   void odomCallback(const nav_msgs::OdometryConstPtr &odom);
 
- protected:
-  void reconfigureCB(SimConfig& config, uint32_t level);
+protected:
+  void reconfigureCB(SimConfig &config, uint32_t level);
   dynamic_reconfigure::Server<SimConfig> server_;
-  
- private:
+  ros::Time last_sim_time;
+
+private:
   void updateRobotPositionFromTF();
   void publishAgents();
   void publishGroups();
@@ -103,7 +105,7 @@ class Simulator {
   void publishRobotPosition();
   void publishWaypoints();
 
- private:
+private:
   ros::NodeHandle nh_;
   bool paused_;
   ros::Timer spawn_timer_;
@@ -125,13 +127,13 @@ class Simulator {
 
   // pointers and additional data
   std::unique_ptr<tf::TransformListener> transform_listener_;
-  Agent* robot_;
+  Agent *robot_;
   tf::StampedTransform last_robot_pose_;
   geometry_msgs::Quaternion last_robot_orientation_;
   ros::Subscriber odom_sub_;
 
   inline std::string agentStateToActivity(
-      const AgentStateMachine::AgentState& state) const;
+      const AgentStateMachine::AgentState &state) const;
 
   inline std_msgs::Header createMsgHeader() const;
 };
