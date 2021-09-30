@@ -6,7 +6,7 @@
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
-  <maintainer email="mahmoud@todo.todo">mahmoud</maintainer>
+  <maintainer email="jacek@todo.todo">jacek</maintainer>
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>TODO</license>
 
@@ -14,8 +14,8 @@
   <build_depend>gazebo_ros</build_depend>
   <build_depend>roscpp</build_depend>
 
-<build_depend>pedsim_msgs</build_depend>
-<build_depend>geometry_msgs</build_depend>
+  <build_depend>pedsim_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
 
   <build_export_depend>gazebo_ros</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>

@@ -11,11 +11,13 @@
 
 #include <ros/ros.h>
 #include <pedsim_simulator/scene.h>
+#include <pedsim_simulator/scenarioreader.h>
 #include <pedsim_simulator/waypointplanner/waypointplanner.h>
 #include <pedsim_srvs/SpawnPeds.h>
 #include <pedsim_srvs/SpawnObstacle.h>
 #include <pedsim_srvs/SpawnInteractiveObstacles.h>
 #include <pedsim_srvs/MovePeds.h>
+#include <pedsim_srvs/SetObstacles.h>
 #include <flatland_msgs/Model.h>
 #include <gazebo_msgs/ModelState.h>
 #include <pedsim_msgs/Ped.h>
@@ -47,7 +49,7 @@ public:
   ros::ServiceServer respawn_interactive_obstacles_service_;
   ros::ServiceServer spawn_interactive_obstacles_service_;
   ros::ServiceServer remove_all_interactive_obstacles_service_;
-
+  ros::ServiceServer set_obstacles_service_;
   static int agents_index_;
   static int static_obstacles_index_;
   static std::vector<std::string> static_obstacle_names_;
@@ -97,6 +99,10 @@ public:
   */
   bool addStaticObstacles(pedsim_srvs::SpawnObstacle::Request &request,
                           pedsim_srvs::SpawnObstacle::Response &response);
+  /**
+   * @brief Removing existing obstacles and adding new ones from the requested map file
+   */
+  bool setObstacles(pedsim_srvs::SetObstacles::Request &request, pedsim_srvs::SetObstacles::Response &response);
 
 protected:
   ros::NodeHandle nh_;

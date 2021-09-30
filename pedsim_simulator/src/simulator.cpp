@@ -92,7 +92,7 @@ bool Simulator::initializeSimulation()
       "unpause_simulation", &Simulator::onUnpauseSimulation, this);
 
   // setup TF listener and other pointers
-  // transform_listener_.reset(new tf::TransformListener());
+  transform_listener_.reset(new tf::TransformListener());
   std::string odom_topic = ros::this_node::getNamespace() + "/odometry/ground_truth";
   odom_sub_ = nh_.subscribe(odom_topic, 1, &Simulator::odomCallback, this);
 
@@ -158,38 +158,13 @@ void Simulator::runSimulation()
   ros::WallRate r(CONFIG.updateRate);
   while (ros::ok())
   {
-    // if (SCENE.getTime() < 0.1) {
-    //   // setup the robot
-    //   for (Agent* agent : SCENE.getAgents()) {
-    //     if (agent->getType() == Ped::Tagent::ROBOT) {
-    //       robot_ = agent;
-    //       last_robot_orientation_ =
-    //           poseFrom2DVelocity(robot_->getvx(), robot_->getvy());
-    //     }
-    //   }
-    // }
-
-    //   if (!paused_) {
-    //     updateRobotPositionFromTF();
-    //     SCENE.moveAllAgents();
-
-    //     publishAgents();
-    //     publishGroups();
-    //     publishRobotPosition();
-    //     publishObstacles();
-    //     publishWaypoints();
-    //   }
-    //   ros::spinOnce();
-    //   r.sleep();
-    // }
-
     if (!paused_)
     {
-      // updateRobotPositionFromTF();
-      ros::Time now = ros::Time::now();
-      ros::Duration diff = now - last_sim_time;
-      last_sim_time = now;
-      SCENE.setTimeStepSize(diff.toSec() / 5.0); // slow down the simulation
+      updateRobotPositionFromTF();
+      // ros::Time now = ros::Time::now();
+      // ros::Duration diff = now - last_sim_time;
+      // last_sim_time = now;
+      // SCENE.setTimeStepSize(diff.toSec() / 5.0); // slow down the simulation
       SCENE.moveAllAgents();
 
       for (auto agent : SCENE.getAgents())

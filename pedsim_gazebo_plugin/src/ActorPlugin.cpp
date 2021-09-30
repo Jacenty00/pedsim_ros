@@ -49,7 +49,6 @@ namespace gazebo
         {
           ignition::math::Pose3d pose = this->actor->WorldPose();
           ignition::math::Pose3d gzb_pose;
-
           // Getting the direction angle of the agent
           ignition::math::Quaterniond quat(msg->agent_states[actor].pose.orientation.w, msg->agent_states[actor].pose.orientation.x, msg->agent_states[actor].pose.orientation.y, msg->agent_states[actor].pose.orientation.z);
           ignition::math::Angle yaw = quat.Yaw();
@@ -64,13 +63,13 @@ namespace gazebo
             distanceTraveled = (gzb_pose.Pos() -
                                 pose.Pos())
                                    .Length();
-            this->actor->SetWorldPose(gzb_pose, false, false);
+            this->actor->SetWorldPose(gzb_pose, true, false);
             this->actor->SetScriptTime(this->actor->ScriptTime() + (distanceTraveled * 5.1)); //5.1 == Animation factor
             return;
           }
           catch (gazebo::common::Exception gz_ex)
           {
-            // Print exception
+            gzerr << "Problem\n";
           }
         }
       }

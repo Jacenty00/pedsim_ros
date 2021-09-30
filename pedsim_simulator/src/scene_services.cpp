@@ -44,7 +44,7 @@ SceneServices::SceneServices()
   respawn_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/respawn_interactive_obstacles", &SceneServices::respawnInteractiveObstacles, this);
   spawn_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/spawn_interactive_obstacles", &SceneServices::spawnInteractiveObstacles, this);
   remove_all_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/remove_all_interactive_obstacles", &SceneServices::removeAllInteractiveObstacles, this);
-
+  set_obstacles_service_ = nh_.advertiseService("pedsim_simulator/set_obstacles", &SceneServices::setObstacles, this);
   //flatland service clients
   spawn_models_topic_ = ros::this_node::getNamespace() + "/spawn_models";
   spawn_models_client_ = nh_.serviceClient<flatland_msgs::SpawnModels>(spawn_models_topic_, true);
@@ -65,6 +65,26 @@ SceneServices::SceneServices()
   std::stringstream ss;
   ss << f.rdbuf();
   human_model = ss.str();
+}
+
+bool SceneServices::setObstacles(pedsim_srvs::SetObstacles::Request &request, pedsim_srvs::SetObstacles::Response &response)
+{
+  ROS_ERROR("GOT obstacles message");
+  SCENE.removeAllObstacles();
+  std::string sim_setup_path = ros::package::getPath("simulator_setup");
+  std::string path = sim_setup_path + "/scenarios/ped_scenarios/" + request.map_name + ".xml";
+  const QString scenefile = QString::fromStdString(path);
+  ScenarioReader scenario_reader;
+  if (scenario_reader.readFromFile(scenefile) == false)
+  {
+    ROS_ERROR_STREAM(
+        "Could not load the scene file, please check the paths and param "
+        "names : "
+        << path);
+    return false;
+  }
+  response.finished = true;
+  return true;
 }
 
 bool SceneServices::spawnPeds(pedsim_srvs::SpawnPeds::Request &request, pedsim_srvs::SpawnPeds::Response &response)
@@ -694,6 +714,7 @@ bool SceneServices::spawnModelsInGazebo(std::vector<gazebo_msgs::ModelState> gaz
 
   return true;
 }
+
 // bool SceneServices::respawnModelsInFlatland(std::vector<std::string> old_model_names, std::vector<flatland_msgs::Model> new_models) {
 //   flatland_msgs::RespawnModels msg;
 //   msg.request.old_model_names = old_model_names;
