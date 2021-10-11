@@ -33,6 +33,7 @@ namespace gazebo
         return;
       }
       rosNode.reset(new ros::NodeHandle(this->actor->GetName()));
+      rosNode->getParam("/actor_height", this->actor_height);
       ros::SubscribeOptions so = ros::SubscribeOptions::create<pedsim_msgs::AgentStates>("/pedsim_simulator/simulated_agents", 1, boost::bind(&ActorPosePlugin::OnRosMsg, this, _1), ros::VoidPtr(), &rosQueue);
       rosSub = rosNode->subscribe(so);
       rosQueueThread = std::thread(std::bind(&ActorPosePlugin::QueueThread, this));
@@ -54,7 +55,7 @@ namespace gazebo
           ignition::math::Angle yaw = quat.Yaw();
           gzb_pose.Pos().Set(msg->agent_states[actor].pose.position.x,
                              msg->agent_states[actor].pose.position.y,
-                             msg->agent_states[actor].pose.position.z + ACTOR_OFFSET);
+                             msg->agent_states[actor].pose.position.z + actor_height);
 
           // Rotating the actor in the correct direction -> yaw, keeping in mind that the actor is oriented Y-up and Z-front
           gzb_pose.Rot() = ignition::math::Quaterniond(1.5707, 0.0, yaw.Radian() + 1.5707);
@@ -95,7 +96,7 @@ namespace gazebo
     physics::ActorPtr actor;
     physics::TrajectoryInfoPtr trajectoryInfo;
     event::ConnectionPtr updateConnection_;
-    const float ACTOR_OFFSET = 1.02;
+    double actor_height;
   };
   GZ_REGISTER_MODEL_PLUGIN(ActorPosePlugin)
 }
