@@ -20,9 +20,6 @@
 #include <gazebo_msgs/SpawnModel.h>
 #include <gazebo_msgs/DeleteModel.h>
 #include <std_srvs/SetBool.h>
-#include <flatland_msgs/SpawnModels.h>
-#include <flatland_msgs/DeleteModels.h>
-// #include <flatland_msgs/RespawnModels.h>
 #include <iostream>
 #include <pedsim_simulator/rng.h>
 #include <ros/package.h>
@@ -41,15 +38,10 @@ SceneServices::SceneServices()
   reset_peds_service_ = nh_.advertiseService("pedsim_simulator/reset_all_peds", &SceneServices::resetPeds, this);
   add_obstacle_service_ = nh_.advertiseService("pedsim_simulator/add_obstacle", &SceneServices::addStaticObstacles, this);
   move_peds_service_ = nh_.advertiseService("pedsim_simulator/move_peds", &SceneServices::moveAgentClustersInPedsim, this);
-  respawn_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/respawn_interactive_obstacles", &SceneServices::respawnInteractiveObstacles, this);
-  spawn_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/spawn_interactive_obstacles", &SceneServices::spawnInteractiveObstacles, this);
+  // respawn_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/respawn_interactive_obstacles", &SceneServices::respawnInteractiveObstacles, this);
+  // spawn_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/spawn_interactive_obstacles", &SceneServices::spawnInteractiveObstacles, this);
   remove_all_interactive_obstacles_service_ = nh_.advertiseService("pedsim_simulator/remove_all_interactive_obstacles", &SceneServices::removeAllInteractiveObstacles, this);
   set_obstacles_service_ = nh_.advertiseService("pedsim_simulator/set_obstacles", &SceneServices::setObstacles, this);
-  //flatland service clients
-  spawn_models_topic_ = ros::this_node::getNamespace() + "/spawn_models";
-  spawn_models_client_ = nh_.serviceClient<flatland_msgs::SpawnModels>(spawn_models_topic_, true);
-  // respawn_models_topic_ = ros::this_node::getNamespace() + "/respawn_models";
-  // respawn_models_client_ = nh_.serviceClient<flatland_msgs::RespawnModels>(respawn_models_topic_, true);
 
   //gazebo service clients
   spawn_gazebo_topic_ = "gazebo/spawn_sdf_model";
@@ -57,7 +49,6 @@ SceneServices::SceneServices()
 
   delete_models_topic_ = "gazebo/delete_model";
   delete_models_client_ = nh_.serviceClient<gazebo_msgs::DeleteModel>(delete_models_topic_, true);
-  // spawn_gazebo_client_.waitForExistence();
 
   // read in default human gazebo model
   std::string path = ros::package::getPath("pedsim_gazebo_plugin");
@@ -69,7 +60,7 @@ SceneServices::SceneServices()
 
 bool SceneServices::setObstacles(pedsim_srvs::SetObstacles::Request &request, pedsim_srvs::SetObstacles::Response &response)
 {
-  ROS_ERROR("GOT obstacles message");
+  // ROS_ERROR("GOT obstacles message");
   SCENE.removeAllObstacles();
   std::string sim_setup_path = ros::package::getPath("simulator_setup");
   std::string path = sim_setup_path + "/scenarios/ped_scenarios/" + request.map_name + ".xml";
@@ -104,11 +95,6 @@ bool SceneServices::spawnPeds(pedsim_srvs::SpawnPeds::Request &request, pedsim_s
     gazebo_models.insert(gazebo_models.end(), new_gz_models.begin(), new_gz_models.end());
   }
 
-  // bool res = spawnModelsInFlatland(flatland_models);
-  // response.success = res;
-
-  // bool res = spawnModelsInGazebo(gazebo_models);
-  // response.success = res;
   return true;
 }
 
@@ -180,108 +166,108 @@ std::vector<std::string> SceneServices::removePedsInPedsim()
   return names;
 }
 
-bool SceneServices::respawnInteractiveObstacles(pedsim_srvs::SpawnInteractiveObstacles::Request &request, pedsim_srvs::SpawnInteractiveObstacles::Response &response)
-{
-  // remove old
-  std_srvs::Trigger::Request trigger_request;
-  std_srvs::Trigger::Response trigger_response;
-  removeAllInteractiveObstacles(trigger_request, trigger_response);
+// bool SceneServices::respawnInteractiveObstacles(pedsim_srvs::SpawnInteractiveObstacles::Request &request, pedsim_srvs::SpawnInteractiveObstacles::Response &response)
+// {
+//   // remove old
+//   std_srvs::Trigger::Request trigger_request;
+//   std_srvs::Trigger::Response trigger_response;
+//   removeAllInteractiveObstacles(trigger_request, trigger_response);
 
-  // spawn new
-  bool res = spawnInteractiveObstacles(request, response);
+//   // spawn new
+//   bool res = spawnInteractiveObstacles(request, response);
 
-  response.success = res;
-  return res;
-}
+//   response.success = res;
+//   return res;
+// }
 
-bool SceneServices::spawnInteractiveObstacles(pedsim_srvs::SpawnInteractiveObstacles::Request &request, pedsim_srvs::SpawnInteractiveObstacles::Response &response)
-{
-  std::vector<flatland_msgs::Model> new_models;
+// bool SceneServices::spawnInteractiveObstacles(pedsim_srvs::SpawnInteractiveObstacles::Request &request, pedsim_srvs::SpawnInteractiveObstacles::Response &response)
+// {
+//   std::vector<flatland_msgs::Model> new_models;
 
-  for (auto obstacle : request.obstacles)
-  {
-    // get name
-    std::string name = "";
-    if (obstacle.name == "")
-    {
-      name = "interactive_waypoint_" + std::to_string(static_obstacles_index_);
-    }
-    else
-    {
-      name = obstacle.name;
-    }
-    static_obstacles_index_++;
-    static_obstacle_names_.push_back(name);
+//   for (auto obstacle : request.obstacles)
+//   {
+//     // get name
+//     std::string name = "";
+//     if (obstacle.name == "")
+//     {
+//       name = "interactive_waypoint_" + std::to_string(static_obstacles_index_);
+//     }
+//     else
+//     {
+//       name = obstacle.name;
+//     }
+//     static_obstacles_index_++;
+//     static_obstacle_names_.push_back(name);
 
-    // get random angle
-    uniform_real_distribution<double> Distribution(0.0, 2 * M_PI);
-    double yaw = Distribution(RNG());
+//     // get random angle
+//     uniform_real_distribution<double> Distribution(0.0, 2 * M_PI);
+//     double yaw = Distribution(RNG());
 
-    // add to pedsim
-    auto direction = Ped::Tvector::fromPolar(Ped::Tangle::fromRadian(yaw), 2.0);
-    auto waypoint_pos = Ped::Tvector(obstacle.pose.position.x, obstacle.pose.position.y) + direction;
-    auto waypoint = new AreaWaypoint(QString(name.c_str()), waypoint_pos, 0.3);
-    waypoint->interactionRadius = obstacle.interaction_radius;
-    if (obstacle.interaction_radius < 0.1)
-    {
-      ROS_WARN("interaction_radius is smaller than 0.1. agents will not interact with this obstacle");
-    }
-    waypoint->staticObstacleAngle = fmod(yaw + M_PI, 2 * M_PI);
+//     // add to pedsim
+//     auto direction = Ped::Tvector::fromPolar(Ped::Tangle::fromRadian(yaw), 2.0);
+//     auto waypoint_pos = Ped::Tvector(obstacle.pose.position.x, obstacle.pose.position.y) + direction;
+//     auto waypoint = new AreaWaypoint(QString(name.c_str()), waypoint_pos, 0.3);
+//     waypoint->interactionRadius = obstacle.interaction_radius;
+//     if (obstacle.interaction_radius < 0.1)
+//     {
+//       ROS_WARN("interaction_radius is smaller than 0.1. agents will not interact with this obstacle");
+//     }
+//     waypoint->staticObstacleAngle = fmod(yaw + M_PI, 2 * M_PI);
 
-    // set type
-    std::string type_string = obstacle.type;
-    int type = 0;
-    // convert type string to enum value
-    auto types = SCENE.obstacle_types;
-    auto it = find(types.begin(), types.end(), type_string);
-    // If element was found
-    if (it != types.end())
-    {
-      type = it - types.begin();
-    }
-    waypoint->setType(static_cast<Ped::Twaypoint::WaypointType>(type));
+//     // set type
+//     std::string type_string = obstacle.type;
+//     int type = 0;
+//     // convert type string to enum value
+//     auto types = SCENE.obstacle_types;
+//     auto it = find(types.begin(), types.end(), type_string);
+//     // If element was found
+//     if (it != types.end())
+//     {
+//       type = it - types.begin();
+//     }
+//     waypoint->setType(static_cast<Ped::Twaypoint::WaypointType>(type));
 
-    // set radius for obstacle force calculation
-    int radius = 1.0;
-    int radius_index = waypoint->getType();
-    if (radius_index < (int)SCENE.obstacle_radius.size())
-    {
-      radius = SCENE.obstacle_radius[radius_index];
-    }
-    waypoint->modelRadius = radius;
+//     // set radius for obstacle force calculation
+//     int radius = 1.0;
+//     int radius_index = waypoint->getType();
+//     if (radius_index < (int)SCENE.obstacle_radius.size())
+//     {
+//       radius = SCENE.obstacle_radius[radius_index];
+//     }
+//     waypoint->modelRadius = radius;
 
-    SCENE.addWaypoint(waypoint);
+//     SCENE.addWaypoint(waypoint);
 
-    // create circular obstacles for applying obstacle force to agents
-    auto circle_obstacle = Ped::Twaypoint(obstacle.pose.position.x, obstacle.pose.position.y);
-    circle_obstacle.modelRadius = radius;
-    SCENE.circleObstacles.push_back(circle_obstacle);
+//     // create circular obstacles for applying obstacle force to agents
+//     auto circle_obstacle = Ped::Twaypoint(obstacle.pose.position.x, obstacle.pose.position.y);
+//     circle_obstacle.modelRadius = radius;
+//     SCENE.circleObstacles.push_back(circle_obstacle);
 
-    // create wall obstacles along model footprint for applying obstacle force to agents
-    std::vector<Obstacle *> new_walls = getWallsFromFlatlandModel(obstacle, yaw);
-    // append to current list of walls
-    walls.insert(walls.end(), new_walls.begin(), new_walls.end());
-    // spawn walls in pedsim
-    for (auto wall : new_walls)
-    {
-      SCENE.addObstacle(wall);
-    }
+//     // create wall obstacles along model footprint for applying obstacle force to agents
+//     std::vector<Obstacle *> new_walls = getWallsFromFlatlandModel(obstacle, yaw);
+//     // append to current list of walls
+//     walls.insert(walls.end(), new_walls.begin(), new_walls.end());
+//     // spawn walls in pedsim
+//     for (auto wall : new_walls)
+//     {
+//       SCENE.addObstacle(wall);
+//     }
 
-    // create flatland model
-    flatland_msgs::Model model;
-    model.name = name;
-    model.ns = name;
-    model.pose.x = obstacle.pose.position.x;
-    model.pose.y = obstacle.pose.position.y;
-    model.pose.theta = yaw;
-    model.yaml_path = obstacle.yaml_path;
-    new_models.push_back(model);
-  }
+//     // create flatland model
+//     flatland_msgs::Model model;
+//     model.name = name;
+//     model.ns = name;
+//     model.pose.x = obstacle.pose.position.x;
+//     model.pose.y = obstacle.pose.position.y;
+//     model.pose.theta = yaw;
+//     model.yaml_path = obstacle.yaml_path;
+//     new_models.push_back(model);
+//   }
 
-  auto res = spawnModelsInFlatland(new_models);
+//   auto res = spawnModelsInFlatland(new_models);
 
-  return res;
-}
+//   return res;
+// }
 
 void SceneServices::removeAllReferencesToInteractiveObstacles()
 {
@@ -365,15 +351,9 @@ void SceneServices::removeAllInteractiveObstaclesFromPedsim()
   walls.clear();
 }
 
-void SceneServices::removeAllInteractiveObstaclesFromFlatland()
-{
-  removeModelsInFlatland(static_obstacle_names_);
-}
-
 bool SceneServices::removeAllInteractiveObstacles(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   removeAllInteractiveObstaclesFromPedsim();
-  removeAllInteractiveObstaclesFromFlatland();
   static_obstacles_index_ = 1;
   static_obstacle_names_.clear();
   response.success = true;
@@ -538,24 +518,6 @@ void SceneServices::addAgentClusterToPedsim(pedsim_msgs::Ped ped, std::vector<in
   }
 }
 
-std::vector<flatland_msgs::Model> SceneServices::getFlatlandModels(pedsim_msgs::Ped ped, std::vector<int> ids)
-{
-  std::vector<flatland_msgs::Model> flatland_msg;
-
-  for (int i = 0; i < ped.number_of_peds; i++)
-  {
-    flatland_msgs::Model model;
-    model.yaml_path = ped.yaml_file;
-    model.name = "person_" + std::to_string(ids[i]);
-    model.ns = "pedsim_agent_" + std::to_string(ids[i]);
-    model.pose.x = ped.pos.x;
-    model.pose.y = ped.pos.y;
-    model.pose.theta = 0.0;
-    flatland_msg.push_back(model);
-  }
-
-  return flatland_msg;
-}
 std::vector<gazebo_msgs::ModelState> SceneServices::getGazeboModels(pedsim_msgs::Ped ped, std::vector<int> ids)
 {
   std::vector<gazebo_msgs::ModelState> model_states;
@@ -610,31 +572,6 @@ std::vector<int> SceneServices::generateAgentIds(int n)
   return ids;
 }
 
-bool SceneServices::removeModelsInFlatland(std::vector<std::string> model_names)
-{
-  ROS_INFO("deleting %ld models", model_names.size());
-  flatland_msgs::DeleteModels msg;
-  msg.request.name = model_names;
-
-  // check validity of client
-  while (!delete_models_client_.isValid())
-  {
-    ROS_WARN("Reconnecting delete_models_client_-server....");
-    delete_models_client_.waitForExistence(ros::Duration(5.0));
-    delete_models_client_ = nh_.serviceClient<flatland_msgs::DeleteModels>(delete_models_topic_, true);
-  }
-
-  delete_models_client_.call(msg);
-
-  if (!msg.response.success)
-  {
-    ROS_ERROR("Failed to delete all %d models. Maybe a few were deleted. Flatland response: %s", int(msg.request.name.size()), msg.response.message.c_str());
-    return false;
-  }
-
-  return true;
-}
-
 bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
 {
   // ROS_INFO("deleting %ld models", model_names.size());
@@ -650,39 +587,15 @@ bool SceneServices::removeModelsInGazebo(std::vector<std::string> model_names)
       delete_models_client_.waitForExistence(ros::Duration(5.0));
       delete_models_client_ = nh_.serviceClient<gazebo_msgs::DeleteModel>(delete_models_topic_, true);
     }
-    ROS_INFO("Deleting model with name %s", model);
+    ROS_INFO("Deleting model with name %s", model.c_str());
     // delete_models_client_.call(msg);
 
     if (!msg.response.success)
     {
-      ROS_ERROR("Failed to delete model %s.", model);
+      ROS_ERROR("Failed to delete model %s.", model.c_str());
       return false;
     }
   }
-  return true;
-}
-
-bool SceneServices::spawnModelsInFlatland(std::vector<flatland_msgs::Model> models)
-{
-  flatland_msgs::SpawnModels msg;
-  msg.request.models = models;
-
-  // check validity of client
-  while (!spawn_models_client_.isValid())
-  {
-    ROS_WARN("Reconnecting spawn_models_client_-server....");
-    spawn_models_client_.waitForExistence(ros::Duration(5.0));
-    spawn_models_client_ = nh_.serviceClient<flatland_msgs::SpawnModels>(spawn_models_topic_, true);
-  }
-
-  spawn_models_client_.call(msg);
-
-  if (!msg.response.success)
-  {
-    ROS_ERROR("Failed to respawn models. Flatland response: %s", msg.response.message.c_str());
-    return false;
-  }
-
   return true;
 }
 

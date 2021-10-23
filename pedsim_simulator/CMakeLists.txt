@@ -15,7 +15,6 @@ set(PEDSIM_SIMULATOR_DEPENDENCIES
   tf
   cmake_modules
   dynamic_reconfigure
-  flatland_msgs
   roslib
 )
 

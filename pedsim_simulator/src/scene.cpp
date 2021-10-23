@@ -70,7 +70,7 @@ Scene::Scene(QObject *parent)
 
   obstacle_cells_.clear();
 
-  arenaGoalSub = nh_.subscribe(ros::this_node::getNamespace() + "/goal", 1, &Scene::arenaGoalCallback, this);
+  arenaGoalSub = nh_.subscribe(ros::this_node::getNamespace() + "/move_base_simple/goal", 1, &Scene::arenaGoalCallback, this);
   arenaGoal = nullptr;
 }
 
