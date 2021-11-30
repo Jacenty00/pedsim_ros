@@ -130,7 +130,6 @@ bool Simulator::initializeSimulation()
   nh_.param<int>("robot_mode", op_mode, 1);
   CONFIG.robot_mode = static_cast<RobotMode>(op_mode);
 
-  ROS_ERROR_STREAM("test: " << ros::this_node::getNamespace());
   double spawn_period;
   nh_.param<double>("spawn_period", spawn_period, 5.0);
   nh_.param<std::string>("frame_id", frame_id_, "odom");
