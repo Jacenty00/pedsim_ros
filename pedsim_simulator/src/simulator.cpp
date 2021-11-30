@@ -161,7 +161,7 @@ void Simulator::runSimulation()
   {
     if (!paused_)
     {
-      updateRobotPositionFromTF();
+      // updateRobotPositionFromTF();
       // ros::Time now = ros::Time::now();
       // ros::Duration diff = now - last_sim_time;
       // last_sim_time = now;

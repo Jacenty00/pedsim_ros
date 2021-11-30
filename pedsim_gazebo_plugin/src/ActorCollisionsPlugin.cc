@@ -85,24 +85,10 @@ void ActorCollisionsPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
       if (scaling.find(name) != scaling.end())
       {
-        gzerr << "inside"
-              << "\n";
-
-        gzerr << collision->GetShape()->TypeStr() << "\n";
-
-        // gazebo::physics::BoxShape box(collision);
-
-        // box.Init();
-
-        // box.SetSize(ignition::math::Vector3d(1, 1, 1));
-
-        // boost::shared_ptr<gazebo::physics::BoxShape> box_ptr(&box);
-
-        // collision->SetShape(box_ptr);
         auto boxShape = collision->GetShape();
 
         if (!boxShape)
-          gzerr << "KURWA\n";
+          gzerr << "Actor Collision Plugin: Not box shape\n";
         // Make sure we have a box shape.
         if (boxShape)
           boxShape->SetScale(scaling[name]); //scale the original box
