@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-*/
+ */
 
 #include <ignition/math/Vector3.hh>
 
@@ -40,7 +40,7 @@ void ActorCollisionsPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Map of collision scaling factors
   std::map<std::string, ignition::math::Vector3d> scaling;
   std::map<std::string, ignition::math::Pose3d> offsets;
-  gzerr << "Hello\n";
+
   // Read in the collision scaling factors, if present
   if (_sdf->HasElement("scaling"))
   {
@@ -91,7 +91,7 @@ void ActorCollisionsPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
           gzerr << "Actor Collision Plugin: Not box shape\n";
         // Make sure we have a box shape.
         if (boxShape)
-          boxShape->SetScale(scaling[name]); //scale the original box
+          boxShape->SetScale(scaling[name]); // scale the original box
       }
 
       if (offsets.find(name) != offsets.end())
