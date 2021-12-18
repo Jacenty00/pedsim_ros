@@ -117,7 +117,7 @@ Agent::Agent()
   group = nullptr;
   waypointplanner = nullptr;
   disableForce("KeepDistance");
-  // disableForce("Robot");
+  enableForce("Robot");
 
   lastVarySpeed = ros::Time::now();
 
@@ -229,8 +229,10 @@ Ped::Tvector Agent::robotForce()
 
   if (!disabledForces.contains("Robot"))
   {
+
     if (SCENE.robot != nullptr)
     {
+
       auto diff = p - SCENE.robot->getPosition();
       auto dist = diff.length();
       if (dist < 4.0)

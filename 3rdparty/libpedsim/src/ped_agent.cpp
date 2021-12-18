@@ -258,39 +258,41 @@ Ped::Tvector Ped::Tagent::socialForce() const
   return force;
 }
 
-// Ped::Tvector Ped::Tagent::robotForce(){
-//   Tvector force;
-//   return force;
-// }
+Ped::Tvector Ped::Tagent::robotForce()
+{
+  Tvector force;
+  return force;
+}
 
 // Added by Ronja Gueldenring
 // Robot influences agents behaviour according the robot force
-Ped::Tvector Ped::Tagent::robotForce()
-{
-  double vel = sqrt(pow(this->getvx(), 2) + pow(this->getvy(), 2));
-  if (vel > 0.1)
-  {
-    still_time = 0.0;
-  }
+// Ped::Tvector Ped::Tagent::robotForce()
+// {
+//   double vel = sqrt(pow(this->getvx(), 2) + pow(this->getvy(), 2));
+//   if (vel > 0.1)
+//   {
+//     still_time = 0.0;
+//   }
 
-  Tvector force;
-  for (const Ped::Tagent *other : neighbors)
-  {
-    if (other->getType() == ROBOT)
-    {
-      // pedestrian is influenced robot force depending on the distance to the robot.
-      Tvector diff = other->p - p;
-      Tvector diffDirection = diff.normalized();
-      double distanceSquared = diff.lengthSquared();
-      double distance = sqrt(distanceSquared) - (agentRadius + 0.7);
-      double forceAmount = -1.0 * exp(-distance / forceSigmaRobot);
-      Tvector robot_force = forceAmount * diff.normalized();
-      force += robot_force;
-      break;
-    }
-  }
-  return force * forceFactorObstacle;
-}
+//   Tvector force;
+//   for (const Ped::Tagent *other : neighbors)
+//   {
+//     if (other->getType() == ROBOT)
+//     {
+//       ROS_INFO("TEST ROBOT FORCE");
+//       // pedestrian is influenced robot force depending on the distance to the robot.
+//       Tvector diff = other->p - p;
+//       Tvector diffDirection = diff.normalized();
+//       double distanceSquared = diff.lengthSquared();
+//       double distance = sqrt(distanceSquared) - (agentRadius + 0.7);
+//       double forceAmount = -1.0 * exp(-distance / forceSigmaRobot);
+//       Tvector robot_force = forceAmount * diff.normalized();
+//       force += robot_force;
+//       break;
+//     }
+//   }
+//   return force * forceFactorObstacle;
+// }
 
 /// Calculates the force between this agent and the nearest obstacle in this
 /// scene.
